@@ -7,6 +7,9 @@ TagManager:
   - Floor
   - Wall
   - Dialogue
+  - MoveablePiece
+  - PieceCollisionCheck
+  - Visual Cue
   layers:
   - Default
   - TransparentFX

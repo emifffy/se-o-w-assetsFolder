@@ -1,2 +1,1 @@
-# sea_e_o
-Game design for IAT 312 Project 2
+# sea_e_o_proto2
