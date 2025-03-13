@@ -1,1 +1,0 @@
-# sea_e_o_proto2
