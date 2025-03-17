@@ -12,6 +12,7 @@ public class player_behavior : MonoBehaviour
     public LayerMask stop_movement, BOX;
     public Sprite[] normal_front, normal_back, normal_left, normal_right;
     public Sprite[] diving_front, diving_back, diving_left, diving_right;
+    private Sprite[] curSprite;
     
     public GameObject _sprite;
     public bool is_diving;
@@ -44,9 +45,19 @@ public class player_behavior : MonoBehaviour
                     audioSource.PlayOneShot(audioClip);
                 }
             }
-            if(counter >= 7){
+/*
+            if((Math.Abs(Input.GetAxisRaw("Horizontal")) == 0f) &&
+               (Math.Abs(Input.GetAxisRaw("Vertical")) == 0f)) {
+                counter = 1;
+               } */
+            if(counter > 7){
                 counter = 0;
             }
+        }
+
+        else {
+            counter = 1;
+             _sprite.GetComponent<SpriteRenderer>().sprite = curSprite[counter];
         }
         //prevent movement if dialoague is playing
         if(DialogueManager.GetInstance().dialogueIsPlaying)
@@ -73,14 +84,18 @@ public class player_behavior : MonoBehaviour
                 if(is_diving){
                     if(Input.GetAxisRaw("Horizontal") == 1f){
                         _sprite.GetComponent<SpriteRenderer>().sprite = diving_right[counter];
+                        curSprite = diving_right;
                     } else if(Input.GetAxisRaw("Horizontal") == -1f){
                         _sprite.GetComponent<SpriteRenderer>().sprite = diving_left[counter];
+                        curSprite = diving_left;
                     }
                 } else {
                     if(Input.GetAxisRaw("Horizontal") == 1f){
                         _sprite.GetComponent<SpriteRenderer>().sprite = normal_right[counter];
+                        curSprite = normal_right;
                     } else if(Input.GetAxisRaw("Horizontal") == -1f){
                         _sprite.GetComponent<SpriteRenderer>().sprite = normal_left[counter];
+                        curSprite = normal_left;
                     }
                 }
             }
@@ -90,14 +105,18 @@ public class player_behavior : MonoBehaviour
                 if(is_diving){
                     if(Input.GetAxisRaw("Vertical") == 1f){
                         _sprite.GetComponent<SpriteRenderer>().sprite = diving_back[counter];
+                        curSprite = diving_back;
                     } else if(Input.GetAxisRaw("Vertical") == -1f){
                         _sprite.GetComponent<SpriteRenderer>().sprite = diving_front[counter];
+                        curSprite = diving_front;
                     }
                 } else {
                     if(Input.GetAxisRaw("Vertical") == 1f){
                         _sprite.GetComponent<SpriteRenderer>().sprite = normal_back[counter];
+                        curSprite = normal_back;
                     } else if(Input.GetAxisRaw("Vertical") == -1f){
                         _sprite.GetComponent<SpriteRenderer>().sprite = normal_front[counter];
+                        curSprite = normal_front;
                     }
                 }
             }
