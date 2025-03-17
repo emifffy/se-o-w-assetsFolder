@@ -1,97 +1,106 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+// import math
+using System;
 
 public class player_behavior : MonoBehaviour
 {
-    public float moveDistance; // Tile size
-    public float moveSpeed;
+    // variable parking lot -----------------------
+    public float speed = 5.0f;
     public Transform move_point;
     public LayerMask stop_movement, BOX;
-    public Sprite sprite_normal_front, sprite_normal_back, sprite_normal_left, sprite_normal_right;
-    public Sprite sprite_diving_front, sprite_diving_back, sprite_diving_left, sprite_diving_right;
+    public Sprite[] normal_front, normal_back, normal_left, normal_right;
+    public Sprite[] diving_front, diving_back, diving_left, diving_right;
+    
+    public GameObject _sprite;
     public bool is_diving;
-    public GameObject sprite_obj;
+    private int counter = 0;
+    private float timeAccumulator = 0f;
+    private float frameRate = 1f / 6f; // 1/60th of a second (60 FPS)
 
-    private bool isMoving = false;
-
+    public AudioSource audioSource;
+    public AudioClip audioClip;
+    // ---------------------------------------------
+    // Start is called before the first frame update
     void Start()
     {
         is_diving = false;
-        // move_point.position = SnapToGrid(transform.position);
-        transform.position = move_point.position;
         move_point.parent = null;
-        moveDistance = 0.64f;
-        moveSpeed = 5.0f;
     }
 
+    // Update is called once per frame
     void Update()
     {
-        if (!isMoving)
-        {
-            if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
-                StartCoroutine(Move(Vector3.up));
-
-            else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
-                StartCoroutine(Move(Vector3.down));
-
-            else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
-                StartCoroutine(Move(Vector3.left));
-
-            else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
-                StartCoroutine(Move(Vector3.right));
-        }
-    }
-
-    IEnumerator Move(Vector3 direction)
-    {
-        isMoving = true;
-        
-        Vector3 targetPosition = move_point.position + direction * moveDistance;
-        // targetPosition = SnapToGrid(targetPosition);
-
-        // Check if the tile is free
-        if (!Physics2D.OverlapCircle(targetPosition, 0.15f, stop_movement) &&
-            !Physics2D.OverlapCircle(targetPosition, 0.15f, BOX))
-        {
-            move_point.position = targetPosition;
-            UpdateSprite(direction);
-            
-            // Move the player over time to create a step-by-step effect
-            while (Vector3.Distance(transform.position, move_point.position) > 0.001f)
+        // increment counter when player moves
+        if(Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0){
+            timeAccumulator += Time.deltaTime;
+            while (timeAccumulator >= frameRate)
             {
-                transform.position = Vector3.MoveTowards(transform.position, move_point.position, moveSpeed * Time.deltaTime);
-                yield return null;
+                counter++;
+                timeAccumulator -= frameRate;
+                // if audio not playing
+                if(!audioSource.isPlaying){
+                    audioSource.PlayOneShot(audioClip);
+                }
             }
-
-            transform.position = move_point.position; // Ensure final position is exact
-            yield return new WaitForSeconds(0.05f); // Pause before allowing another move
+            if(counter >= 7){
+                counter = 0;
+            }
         }
-
-        isMoving = false;
+        //prevent movement if dialoague is playing
+        if(DialogueManager.GetInstance().dialogueIsPlaying)
+        {
+            return;
+        }
+        // move player to move_point
+        transform.position = Vector3.MoveTowards(transform.position, move_point.position, speed * Time.deltaTime);
+        // if player is at move_point, player can move
+        if(Vector3.Distance(transform.position, move_point.position) <= 0.05f){
+            player_move();
+        }
+        
+        
     }
 
-    // Vector3 SnapToGrid(Vector3 position)
-    // {
-    //     float snappedX = Mathf.Round(position.x / moveDistance) * moveDistance;
-    //     float snappedY = Mathf.Round(position.y / moveDistance) * moveDistance;
-    //     return new Vector3(snappedX, snappedY, position.z);
-    // }
-
-    void UpdateSprite(Vector3 direction)
-    {
-        if (is_diving)
-        {
-            if (direction == Vector3.right) sprite_obj.GetComponent<SpriteRenderer>().sprite = sprite_diving_right;
-            else if (direction == Vector3.left) sprite_obj.GetComponent<SpriteRenderer>().sprite = sprite_diving_left;
-            else if (direction == Vector3.up) sprite_obj.GetComponent<SpriteRenderer>().sprite = sprite_diving_back;
-            else if (direction == Vector3.down) sprite_obj.GetComponent<SpriteRenderer>().sprite = sprite_diving_front;
-        }
-        else
-        {
-            if (direction == Vector3.right) sprite_obj.GetComponent<SpriteRenderer>().sprite = sprite_normal_right;
-            else if (direction == Vector3.left) sprite_obj.GetComponent<SpriteRenderer>().sprite = sprite_normal_left;
-            else if (direction == Vector3.up) sprite_obj.GetComponent<SpriteRenderer>().sprite = sprite_normal_back;
-            else if (direction == Vector3.down) sprite_obj.GetComponent<SpriteRenderer>().sprite = sprite_normal_front;
-        }
-    }
+    void player_move(){
+        
+        // if press the arrow keys, move
+        if(Math.Abs(Input.GetAxisRaw("Horizontal")) == 1f){
+            if(!Physics2D.OverlapCircle(move_point.position + new Vector3(Input.GetAxisRaw("Horizontal") * 0.64f, 0f, 0f), 0.15f, stop_movement) && !Physics2D.OverlapCircle(move_point.position + new Vector3(Input.GetAxisRaw("Horizontal") * 0.64f, 0f, 0f), 0.15f, BOX) )
+            {
+                move_point.position += new Vector3(Input.GetAxisRaw("Horizontal") * 0.64f, 0f, 0f);
+                if(is_diving){
+                    if(Input.GetAxisRaw("Horizontal") == 1f){
+                        _sprite.GetComponent<SpriteRenderer>().sprite = diving_right[counter];
+                    } else if(Input.GetAxisRaw("Horizontal") == -1f){
+                        _sprite.GetComponent<SpriteRenderer>().sprite = diving_left[counter];
+                    }
+                } else {
+                    if(Input.GetAxisRaw("Horizontal") == 1f){
+                        _sprite.GetComponent<SpriteRenderer>().sprite = normal_right[counter];
+                    } else if(Input.GetAxisRaw("Horizontal") == -1f){
+                        _sprite.GetComponent<SpriteRenderer>().sprite = normal_left[counter];
+                    }
+                }
+            }
+        } else if(Math.Abs(Input.GetAxisRaw("Vertical")) == 1f){
+            if(!Physics2D.OverlapCircle(move_point.position + new Vector3(0f, Input.GetAxisRaw("Vertical") * 0.64f, 0f), 0.15f, stop_movement) && !Physics2D.OverlapCircle(move_point.position + new Vector3(0f, Input.GetAxisRaw("Vertical") * 0.64f, 0f), 0.15f, BOX)){
+                move_point.position += new Vector3(0f, Input.GetAxisRaw("Vertical") * 0.64f, 0f);
+                if(is_diving){
+                    if(Input.GetAxisRaw("Vertical") == 1f){
+                        _sprite.GetComponent<SpriteRenderer>().sprite = diving_back[counter];
+                    } else if(Input.GetAxisRaw("Vertical") == -1f){
+                        _sprite.GetComponent<SpriteRenderer>().sprite = diving_front[counter];
+                    }
+                } else {
+                    if(Input.GetAxisRaw("Vertical") == 1f){
+                        _sprite.GetComponent<SpriteRenderer>().sprite = normal_back[counter];
+                    } else if(Input.GetAxisRaw("Vertical") == -1f){
+                        _sprite.GetComponent<SpriteRenderer>().sprite = normal_front[counter];
+                    }
+                }
+            }
+        }  
+    }   
 }

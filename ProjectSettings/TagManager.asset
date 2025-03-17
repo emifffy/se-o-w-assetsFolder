@@ -18,18 +18,18 @@ TagManager:
   - Water
   - UI
   - StopMovement
-  - MainLabFlag
-  - ContainmentRoomFlag
-  - LockedRoomFlag
-  - EquipmentRoomFlag
-  - AIRoomFlag
-  - UpperHallFlag
-  - MoonPoolFlag
-  - Monster
-  - OceanExit
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
   - BOX
   - Teleport
-  - 
+  - Player
   - 
   - 
   - 
