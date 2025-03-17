@@ -231,6 +231,7 @@ public class FlagManager : MonoBehaviour
                     // objective text
                     ((Ink.Runtime.StringValue) DialogueManager.GetInstance().GetVariableState("objective")).value = "Investigate Bedroom Panel";
                 } else if(scene13Done == "true" && usb == "true"){
+                    ((Ink.Runtime.StringValue) DialogueManager.GetInstance().GetVariableState("objective")).value = "Head to Marine room";
                     vent_trigger.SetActive(true);
                     sceneflag14.SetActive(true);
                     scene_index = 14;
