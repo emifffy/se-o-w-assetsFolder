@@ -28,6 +28,7 @@ public class player_behavior : MonoBehaviour
     {
         is_diving = false;
         move_point.parent = null;
+        curSprite = normal_front;
     }
 
     // Update is called once per frame
